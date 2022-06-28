@@ -24,6 +24,12 @@ const item3 = new Item({
     name: "Hit the - button to delete an item"
 });
 
+const listSchema = {
+    name: String,
+    items: [itemsSchema]
+};
+
+const List = mongoose.model("List", listSchema);
 const defaultItems = [item1, item2, item3];
 
 
@@ -50,25 +56,46 @@ app.get("/", (req, res) => {
     })
     // res.render("list", { kindOfDay: "Today", newListItems: items })
 });
-app.get("/work", (req, res) => {
-    var title = "Today's work"
-    res.render("list", { kindOfDay: title, newListItems: workItems })
+app.get("/:cnewlist", (req, res) => {
+    const clistName = req.params.cnewlist;
+    List.findOne({ name: clistName }, (err, foundList) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            if (!foundList) {
+                console.log("doe not exist");
+                const list = new List({
+                    name: clistName,
+                    items: defaultItems
+                });
+
+                list.save();
+                res.redirect("/"+clistName);
+            }
+            else{
+                console.log("exist");
+                res.render("list", { kindOfDay: foundList.name, newListItems:foundList.items })
+            }
+        }
+    });
 })
+
 app.post("/", (req, res) => {
     const itemName = req.body.newItem;
     const nitem = new Item({
-        name:itemName
+        name: itemName
     });
     nitem.save();
     res.redirect("/");
 })
-app.post("/delete", (req,res)=>{
+app.post("/delete", (req, res) => {
     const checkedItemId = req.body.checkbox;
-    Item.findByIdAndRemove(checkedItemId, (err)=>{
-        if(err){
+    Item.findByIdAndRemove(checkedItemId, (err) => {
+        if (err) {
             console.log(err);
         }
-        else{
+        else {
             console.log("successfully deleted");
         }
     });
