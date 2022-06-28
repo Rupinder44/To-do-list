@@ -55,15 +55,24 @@ app.get("/work", (req, res) => {
     res.render("list", { kindOfDay: title, newListItems: workItems })
 })
 app.post("/", (req, res) => {
-    var item = req.body.newItem;
-    if (req.body.list === "Today's") {
-        workItems.push(item);
-        res.redirect("/work");
-    }
-    else {
-        items.push(item);
-        res.redirect("/");
-    }
+    const itemName = req.body.newItem;
+    const nitem = new Item({
+        name:itemName
+    });
+    nitem.save();
+    res.redirect("/");
+})
+app.post("/delete", (req,res)=>{
+    const checkedItemId = req.body.checkbox;
+    Item.findByIdAndRemove(checkedItemId, (err)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            console.log("successfully deleted");
+        }
+    });
+    res.redirect("/");
 })
 app.post("/work", (req, res) => {
     var wItem = req.body.newItem;
